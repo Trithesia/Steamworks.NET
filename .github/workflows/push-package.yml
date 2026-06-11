@@ -21,4 +21,9 @@ jobs:
         run: nuget pack Steamworks.NET.nuspec -OutputDirectory bin
       - name: Push to GitHubTrithesia
         working-directory: Standalone2.0
-        run: dotnet nuget push "bin/*.nupkg" -s https://nuget.pkg.github.com/Trithesia/index.json -k ${{ secrets.NUGET_SECRET }} --skip-duplicate
+        shell: pwsh
+        run: |
+          $pkg = Get-ChildItem bin -Filter *.nupkg -Recurse | Select-Object -First 1
+          if (-not $pkg) { throw "No .nupkg found under bin/ - the Pack step produced nothing." }
+          Write-Host "Pushing $($pkg.FullName)"
+          dotnet nuget push $pkg.FullName -s https://nuget.pkg.github.com/Trithesia/index.json -k ${{ secrets.NUGET_SECRET }} --skip-duplicate
